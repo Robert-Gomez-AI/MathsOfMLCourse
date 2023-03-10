@@ -93,6 +93,7 @@ class SVM:
         self.b = b
         self.losses = losses
         self.val_loss= val_loss
+        print(self.val_loss==self.losses)
         return self.w, self.b, losses
 
     def predict(self, X):
