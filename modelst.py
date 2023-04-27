@@ -1,10 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-
-plt.style.use('seaborn-v0_8-dark')
-
-np.random.seed(42)
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 def train_validation_test_split(X, y, test_size=0.2, val_size=0.25, random_state=42):
 
@@ -26,9 +24,7 @@ class SVM:
         self.w = 0
         self.b = 0
 
-   
-
-     # Hinge Loss Function / Calculation
+    # Hinge Loss Function / Calculation
     def hingeloss(self, w, b, x, y):
         # Regularizer term
         reg = 0.5 * (w * w)
@@ -107,7 +103,7 @@ class SVM:
         prediction = np.dot(X, self.w[0]) + self.b # w.x + b
         return np.sign(prediction)
     def plot_loss(self):
-        plt.plot(self.losses,linewidth=3,label='Losses')
+        plt.plot(self.losses,label='Losses')
         plt.plot(self.val_loss, label='val_loss')
         plt.suptitle('Loss vs Epochs')
         plt.xlabel('Epochs')
@@ -115,40 +111,22 @@ class SVM:
         plt.grid(color='white')
         plt.legend()
         plt.show()
-    
-    def plot_omega(self):
-        '''
-        plt.plot(self.losses,linewidth=3,label='Losses')
-        plt.plot(self.val_loss, label='val_loss')
-        plt.suptitle('Loss vs Epochs')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.grid(color='white')
-        plt.legend()
-        plt.show()
-        '''
-
-        fig, axs = plt.subplots(1,2)
-        axs[0].plot(self.losses,linewidth=3,label='Losses')
-        axs[0].plot(self.val_loss, label='val_loss')
-        axs[0].set_title('Loss vs Epochs')
-        axs[0].set_xlabel('Epochs')
-        axs[0].set_ylabel('Loss')
-        axs[0].legend()
-
-        omega = np.abs(np.array(self.losses)-np.array(self.val_loss))
-
-        axs[1].plot(omega,linewidth=3,label='Omega')
-    
-        axs[1].set_title('$\Omega$ vs Epochs')
-        axs[1].set_xlabel('Epochs')
-        axs[1].set_ylabel('Omega')
-
-
-        fig.tight_layout(pad=1.0)
-        fig.set_figwidth(10)
-        fig.set_figheight(5)
-        plt.grid(color='white')
-        plt.show()
-
         
+
+df_bank_note = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/00267/data_banknote_authentication.txt', header=None)
+
+df_bank_note.columns = ['variance', 'skewness', 'curtosis', 'entropy', 'class']
+
+X =df_bank_note.drop('class',axis=1).values
+y= df_bank_note['class'].values
+
+# Scale the features using MinMaxScaler
+scaler = MinMaxScaler()
+X = scaler.fit_transform(X)
+
+# Split the dataset into training and testing sets
+X_train, X_val, X_test, y_train, y_val, y_test= train_validation_test_split(X, y)
+
+svm = SVM()
+
+svm.fit(X_train, y_train,X_val,y_val,learning_rate=0.001,epochs=50)
