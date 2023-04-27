@@ -40,8 +40,14 @@ class SVM:
             # calculating loss
             loss = reg + self.C * max(0, 1-opt_term)
         return loss[0][0]
+    
+    def accuracy(self,w,b,x,y):
+        prediction = np.dot(x, w[0]) + b # w.x + b
+        compared=np.sign(prediction)==y
+        self.precision=sum(compared)/x.shape[0]
+        return self.precision
 
-    def fit(self, X, Y,X_val,y_val, batch_size=100, learning_rate=0.001, epochs=1000):
+    def fit(self, X, Y,X_val,y_val, batch_size=100, learning_rate=0.001, epochs=1000,eval_step=10):
         # The number of features in X
         number_of_features = X.shape[1]
 
@@ -61,14 +67,28 @@ class SVM:
         b = 0
         losses = []
         val_loss=[]
+
+        accuracy=[]
+        val_accuracy=[]
+
         # Gradient Descent logic
         for i in range(epochs):
-            # Calculating the Hinge Loss
-            l = self.hingeloss(w, b, X, Y)
-            vl= self.hingeloss(w,b,X_val,y_val)
-            # Appending all losses 
-            losses.append(l)
-            val_loss.append(vl)
+            if i%eval_step==0:
+                # Calculating the Hinge Loss
+                l = self.hingeloss(w, b, X, Y)
+                vl= self.hingeloss(w,b,X_val,y_val)
+                # Appending all losses 
+                losses.append(l)
+                val_loss.append(vl)
+
+                acc= self.accuracy(w,b,X,Y)
+                acc_val= self.accuracy(w,b,X_val,y_val)
+                
+                # Appending all losses 
+                accuracy.append(acc)
+                val_accuracy.append(acc_val)
+
+
 
             # Starting from 0 to the number of samples with batch_size as interval
             for batch_initial in range(0, number_of_samples, batch_size):
@@ -99,7 +119,10 @@ class SVM:
         self.b = b
         self.losses = losses
         self.val_loss= val_loss
-        print(self.val_loss==self.losses)
+
+        self.accuracy= accuracy
+        self.val_accuracy= val_accuracy
+        print(accuracy)
         return self.w, self.b, losses
 
     def predict(self, X):
@@ -128,7 +151,7 @@ class SVM:
         plt.show()
         '''
 
-        fig, axs = plt.subplots(1,2)
+        fig, axs = plt.subplots(1,3)
         axs[0].plot(self.losses,linewidth=3,label='Losses')
         axs[0].plot(self.val_loss, label='val_loss')
         axs[0].set_title('Loss vs Epochs')
@@ -144,9 +167,15 @@ class SVM:
         axs[1].set_xlabel('Epochs')
         axs[1].set_ylabel('Omega')
 
+        axs[2].plot(self.accuracy,linewidth=3,label='Accuracy')
+        axs[2].plot(self.val_accuracy, label='Validation accuracy')
+        axs[2].set_title('Accuracy vs Epochs')
+        axs[2].set_xlabel('Epochs')
+        axs[2].set_ylabel('Accuracy')
+        axs[2].legend()
 
         fig.tight_layout(pad=1.0)
-        fig.set_figwidth(10)
+        fig.set_figwidth(15)
         fig.set_figheight(5)
         plt.grid(color='white')
         plt.show()
