@@ -1,0 +1,15 @@
+name: Datascience
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - scipy
+  - pandas
+  - openpyxl
+  - ipykernel
+  - matplotlib
+  - tabulate
+  - scikit-learn
+  - seaborn
+  - jupyter
+prefix: /home/silverwolf/anaconda3/envs/Datascience

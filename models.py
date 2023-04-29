@@ -122,7 +122,7 @@ class SVM:
 
         self.accuracy= accuracy
         self.val_accuracy= val_accuracy
-        print(accuracy)
+        print(f'Precisión:{accuracy[-1]}')
         return self.w, self.b, losses
 
     def predict(self, X):
@@ -140,16 +140,6 @@ class SVM:
         plt.show()
     
     def plot_omega(self):
-        '''
-        plt.plot(self.losses,linewidth=3,label='Losses')
-        plt.plot(self.val_loss, label='val_loss')
-        plt.suptitle('Loss vs Epochs')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.grid(color='white')
-        plt.legend()
-        plt.show()
-        '''
 
         fig, axs = plt.subplots(1,3)
         axs[0].plot(self.losses,linewidth=3,label='Losses')
@@ -158,6 +148,7 @@ class SVM:
         axs[0].set_xlabel('Epochs')
         axs[0].set_ylabel('Loss')
         axs[0].legend()
+        plt.grid(color='white')
 
         omega = np.abs(np.array(self.losses)-np.array(self.val_loss))
 
@@ -165,7 +156,8 @@ class SVM:
     
         axs[1].set_title('$\Omega$ vs Epochs')
         axs[1].set_xlabel('Epochs')
-        axs[1].set_ylabel('Omega')
+        axs[1].set_ylabel('$\Omega$')
+        plt.grid(color='white')
 
         axs[2].plot(self.accuracy,linewidth=3,label='Accuracy')
         axs[2].plot(self.val_accuracy, label='Validation accuracy')
@@ -174,10 +166,76 @@ class SVM:
         axs[2].set_ylabel('Accuracy')
         axs[2].legend()
 
-        fig.tight_layout(pad=1.0)
-        fig.set_figwidth(15)
+        fig.tight_layout(pad=0.8)
+        fig.set_figwidth(20)
         fig.set_figheight(5)
         plt.grid(color='white')
         plt.show()
 
+    def evaluate_model(self,x, y,show_metrics=True):
+        # Hacer la predicción con el modelo
+        y_pred = self.predict(x)
         
+        # Calcular los valores de verdaderos positivos, verdaderos negativos, falsos positivos y falsos negativos
+        tp = 0
+        tn = 0
+        fp = 0
+        fn = 0
+        
+        for i in range(len(y)):
+            if y[i] == 1 and y_pred[i] == 1:
+                tp += 1
+            elif y[i] == 0 and y_pred[i] == 0:
+                tn += 1
+            elif y[i] == 0 and y_pred[i] == 1:
+                fp += 1
+            elif y[i] == 1 and y_pred[i] == 0:
+                fn += 1
+        print(f"True positives:{tp}")
+        print(f"True negatives:{tn}")
+        print(f"False positives:{fp}")
+        print(f"False negatives:{tp}")
+
+        # Calcular la precisión, el recall y el F1-score
+        self.precision = tp / (tp + fp)
+        self.recall = tp / (tp + fp)
+        self.f1_score = 2 * (self.precision * self.recall) / (self.precision + self.recall)
+        
+        # Imprimir los resultados
+        print("Precisión:", self.precision)
+        print("Recall:", self.recall)
+        print("F1-score:", self.f1_score) 
+        self.confusion_matrix=np.array([[tn,fp],[fn,tp]])
+
+
+    def plot_confusion_matrix(self):
+        # Configuramos la figura y el subplot
+        fig, ax = plt.subplots(figsize=(4, 4))
+        confusion_matrix=self.confusion_matrix
+        # Configuramos el mapa de colores y la escala
+        im = ax.imshow(confusion_matrix, cmap='Blues')
+        cbar = ax.figure.colorbar(im, ax=ax)
+
+        # Añadimos los títulos y etiquetas de los ejes
+        ax.set(xticks=np.arange(confusion_matrix.shape[1]),
+            yticks=np.arange(confusion_matrix.shape[0]),
+            xticklabels=['Negativo', 'Positivo'], yticklabels=['Negativo', 'Positivo'],
+            xlabel='Valor Predicho', ylabel='Valor Real')
+
+        # Rotamos los labels de los ejes para que se lean mejor
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                rotation_mode="anchor")
+
+        # Añadimos los valores de cada celda de la matriz de confusión
+        thresh = confusion_matrix.max() / 2.
+        for i in range(confusion_matrix.shape[0]):
+            for j in range(confusion_matrix.shape[1]):
+                ax.text(j, i, format(confusion_matrix[i, j], 'd'),
+                        ha="center", va="center",
+                        color="white" if confusion_matrix[i, j] > thresh else "black")
+
+        # Ajustamos los márgenes de la figura
+        fig.tight_layout()
+
+        # Mostramos el plot
+        plt.show()
