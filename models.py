@@ -123,7 +123,7 @@ class SVM:
         self.accuracy= accuracy
         self.val_accuracy= val_accuracy
         print(f'Precisión:{accuracy[-1]}')
-        return self.w, self.b, losses
+        return self.w, self.b
 
     def predict(self, X):
         
@@ -148,16 +148,16 @@ class SVM:
         axs[0].set_xlabel('Epochs')
         axs[0].set_ylabel('Loss')
         axs[0].legend()
-        plt.grid(color='white')
+        axs[0].grid(color='white')
 
-        omega = np.abs(np.array(self.losses)-np.array(self.val_loss))
+        omega = np.abs(np.array(self.accuracy) - np.array(self.val_accuracy))
 
         axs[1].plot(omega,linewidth=3,label='Omega')
     
-        axs[1].set_title('$\Omega$ vs Epochs')
+        axs[1].set_title('$\Omega_{min}$ vs Epochs')
         axs[1].set_xlabel('Epochs')
-        axs[1].set_ylabel('$\Omega$')
-        plt.grid(color='white')
+        axs[1].set_ylabel('$\Omega_{min}$')
+        axs[1].grid(color='white')
 
         axs[2].plot(self.accuracy,linewidth=3,label='Accuracy')
         axs[2].plot(self.val_accuracy, label='Validation accuracy')
@@ -165,6 +165,7 @@ class SVM:
         axs[2].set_xlabel('Epochs')
         axs[2].set_ylabel('Accuracy')
         axs[2].legend()
+        axs[2].grid(color='white')
 
         fig.tight_layout(pad=0.8)
         fig.set_figwidth(20)
@@ -185,11 +186,11 @@ class SVM:
         for i in range(len(y)):
             if y[i] == 1 and y_pred[i] == 1:
                 tp += 1
-            elif y[i] == 0 and y_pred[i] == 0:
+            elif y[i] == -1 and y_pred[i] == -1:
                 tn += 1
-            elif y[i] == 0 and y_pred[i] == 1:
+            elif y[i] == -1 and y_pred[i] == 1:
                 fp += 1
-            elif y[i] == 1 and y_pred[i] == 0:
+            elif y[i] == 1 and y_pred[i] == -1:
                 fn += 1
         print(f"True positives:{tp}")
         print(f"True negatives:{tn}")
